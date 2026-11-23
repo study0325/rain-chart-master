@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#142b45">
+<title>雨温図マスター｜高校地理</title>
+<style>
+:root{--navy:#142b45;--blue:#2865a6;--ink:#17283b;--muted:#65758a;--line:#dbe3ec;--paper:#fff;--bg:#f2f5f9;--green:#16834b;--red:#c33}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+header{background:var(--navy);color:white;padding:22px 16px 25px}header .inner,main{max-width:760px;margin:auto}header h1{font-size:clamp(23px,5vw,32px);margin:0 0 5px}header p{margin:0;color:#d4dfeb;font-size:13px}
+main{padding:18px 13px 40px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px}.stat,.card{background:var(--paper);border:1px solid var(--line);border-radius:15px}.stat{text-align:center;padding:11px 5px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{font-size:21px}.progress{height:6px;background:#dce4ed;border-radius:20px;overflow:hidden;margin:0 0 15px}.progress span{display:block;height:100%;background:var(--blue);width:0;transition:width .2s}
+.card{padding:15px;margin-bottom:14px}.question-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}.question-head h2{font-size:17px;margin:0}.tag{font-size:11px;color:var(--muted);background:#edf2f7;padding:5px 9px;border-radius:30px;white-space:nowrap}
+.chart-wrap{width:100%;overflow:hidden}canvas{display:block;width:100%;height:auto;background:white;border-radius:7px}.axis-note{text-align:center;color:var(--muted);font-size:11px;margin-top:4px}
+.answers-title{font-weight:750;font-size:14px;margin:15px 2px 9px}.answers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.answers button,.action{border:1px solid var(--line);background:white;color:var(--ink);border-radius:11px;padding:13px 5px;font-size:16px;font-weight:750;cursor:pointer;min-height:48px}.answers button:disabled{cursor:default;opacity:1}.answers button.correct{background:#e1f5e9;border-color:#55ae78;color:#12643a}.answers button.wrong{background:#fff0f0;border-color:#db7777;color:#a22}
+.feedback{display:none;margin-top:13px;border-radius:12px;padding:14px;background:#f1f5f9;border:1px solid var(--line)}.feedback.show{display:block}.feedback .result{font-weight:800;font-size:19px}.feedback .explain{font-size:13px;line-height:1.65;margin-top:7px}
+.action{width:100%;background:var(--navy);color:white;border-color:var(--navy);margin-top:12px}.secondary-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.secondary-row .action{background:white;color:var(--ink);border-color:var(--line);font-size:13px;margin:0;min-height:43px}
+.note{font-size:11px;color:var(--muted);line-height:1.6;margin:13px 2px}.settings{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.settings select{border:1px solid var(--line);border-radius:9px;padding:8px;background:white;color:var(--ink)}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:0 15px 25px}
+@media(min-width:600px){main{padding-top:25px}.card{padding:20px}.answers{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="inner"><h1>雨温図マスター</h1><p>高校1年 地理｜ケッペンの気候区分 判別トレーニング</p></div></header>
+<main>
+ <div class="stats">
+  <div class="stat"><small>問題</small><strong id="qnum">1 / 52</strong></div>
+  <div class="stat"><small>正解</small><strong id="correct">0</strong></div>
+  <div class="stat"><small>正解率</small><strong id="rate">--%</strong></div>
+ </div>
+ <div class="progress"><span id="progress"></span></div>
+ <div class="card">
+  <div class="question-head"><h2>この雨温図の気候区分は？</h2><span class="tag" id="difficulty">ランダム出題</span></div>
+  <div class="chart-wrap"><canvas id="chart" width="720" height="610" aria-label="月ごとの気温と降水量を示す雨温図"></canvas></div>
+  <div class="axis-note">気温：折れ線　／　降水量：棒グラフ　｜　横軸：月</div>
+ </div>
+ <div class="settings"><div class="answers-title" style="margin:0">回答を選択</div><label style="font-size:12px;color:var(--muted)">出題順 <select id="mode"><option value="random">ランダム</option><option value="balanced">気候区分ごと</option></select></label></div>
+ <div class="answers" id="answers">
+  <button data-v="Af">Af</button><button data-v="Am">Am</button><button data-v="Aw">Aw</button>
+  <button data-v="BW">BW</button><button data-v="BS">BS</button><button data-v="Cw">Cw</button>
+  <button data-v="Cs">Cs</button><button data-v="Cfa">Cfa</button><button data-v="Cfb">Cfb</button>
+  <button data-v="Df">Df</button><button data-v="Dw">Dw</button><button data-v="ET">ET</button>
+  <button data-v="EF">EF</button>
+ </div>
+ <div class="feedback" id="feedback" aria-live="polite"></div>
+ <button class="action" id="next" hidden>次の問題へ →</button>
+ <div class="secondary-row"><button class="action" id="restart">最初からやり直す</button><button class="action" id="wrongOnly">間違えた問題を復習</button></div>
+ <p class="note">※このサイトの雨温図は、各気候区分の特徴を学ぶための模式的な練習データです。実在都市の観測値そのものではありません。気候区分の境界に近い例は避け、判別しやすい特徴を中心にしています。</p>
+</main>
+<footer>雨温図マスター｜高校地理 学習用</footer>
+<script>
+(()=>{
+const types=[
+{t:'Af',temps:[26,27,27,27,27,26,26,26,27,27,27,26],rain:[230,210,240,220,230,190,180,190,210,240,250,230],city:'シンガポール',desc:'最寒月でも18℃以上。年間を通じて高温で、明瞭な乾季がない。'},
+{t:'Am',temps:[25,26,28,29,28,27,26,26,26,26,25,25],rain:[15,10,20,45,130,260,300,280,250,180,65,25],city:'ムンバイ',desc:'高温で短い乾季がある。雨季には非常に多くの雨が降る。'},
+{t:'Aw',temps:[24,26,29,30,29,27,25,25,26,27,26,24],rain:[5,5,15,35,90,160,210,190,130,55,10,5],city:'バンコク',desc:'高温で、冬に乾季が現れる。夏に降水量が増える。'},
+{t:'BW',temps:[15,18,22,27,31,34,35,34,30,25,19,15],rain:[2,2,3,5,8,10,15,12,8,5,3,2],city:'カイロ',desc:'降水量が極端に少ない砂漠気候。'},
+{t:'BS',temps:[8,12,17,22,27,31,33,32,27,21,14,9],rain:[12,15,20,25,35,20,10,8,12,18,20,15],city:'ウランバートル',desc:'BWより降水量が多いが、乾燥しているステップ気候。'},
+{t:'Cw',temps:[9,12,17,22,25,26,25,24,22,19,14,10],rain:[15,20,35,60,100,170,230,200,120,55,25,15],city:'昆明',desc:'温暖で、冬に乾季が現れる。夏に雨が多い。'},
+{t:'Cs',temps:[9,11,14,17,21,25,28,28,25,20,14,10],rain:[90,75,65,45,25,10,3,5,25,65,85,100],city:'ローマ',desc:'温暖で、夏に乾季が現れる。冬に雨が多い。'},
+{t:'Cfa',temps:[5,6,10,15,20,23,27,28,24,18,13,8],rain:[55,65,110,125,145,175,155,165,190,170,95,65],city:'東京',desc:'温暖で、はっきりした乾季がなく、年間を通して降水がある。'},
+{t:'Cfb',temps:[6,6,8,10,13,16,18,18,16,12,9,7],rain:[80,65,75,60,65,70,65,75,80,95,90,85],city:'ロンドン',desc:'夏は涼しく冬も比較的温和。年間を通して降水がある。'},
+{t:'Df',temps:[-10,-8,-2,7,14,19,22,20,14,6,-2,-8],rain:[35,30,35,45,65,85,100,90,70,55,45,40],city:'モスクワ',desc:'寒い冬と温暖な夏があり、年間を通して降水がある。'},
+{t:'Dw',temps:[-15,-11,-2,8,16,21,24,22,15,6,-5,-13],rain:[5,5,10,20,45,85,150,130,55,20,10,5],city:'北京',desc:'寒い冬と温暖な夏があり、冬に乾季が現れる。'},
+{t:'ET',temps:[-18,-19,-17,-12,-5,1,4,3,-1,-8,-13,-16],rain:[15,12,15,18,25,35,40,35,25,20,18,15],city:'ヌーク',desc:'最暖月でも10℃未満。夏でも気温が低い。'},
+{t:'EF',temps:[-30,-31,-29,-26,-23,-20,-18,-19,-22,-25,-28,-30],rain:[5,5,5,6,8,10,12,10,8,6,5,5],city:'南極内陸',desc:'最暖月でも0℃未満。氷雪に覆われる地域。'}
+];
+const $=id=>document.getElementById(id);
+let deck=[],idx=0,score=0,answered=0,locked=false,wrong=[],review=false;
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function buildDeck(){
+ deck=[];
+ types.forEach((base,ti)=>{for(let v=0;v<4;v++){
+ const shift=(v-1.5)*.65,scale=[.86,1,1.13,1.06][v];
+ deck.push({type:base.t,temps:base.temps.map((x,i)=>Math.round((x+shift+(v===3?(i<6?-1:1):0))*10)/10),rain:base.rain.map((x,i)=>Math.max(0,Math.round(x*scale*(v===2&&i%3===0?1.08:1)))),city:base.city,desc:base.desc,id:ti*4+v});
+ }});
+ if($('mode').value==='random')shuffle(deck);
+}
+function draw(q){
+ const c=$('chart'),ctx=c.getContext('2d'),W=720,H=610,L=75,R=640,T=38,B=550,ph=B-T,pw=R-L,step=pw/12;
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ const yt=x=>B-(x+30)/60*ph,yr=x=>B-x/400*ph;
+ ctx.font='17px sans-serif';ctx.lineWidth=1;
+ for(let t=-30;t<=30;t+=10){let y=yt(t);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.strokeStyle=t===0?'#555':'#ddd';ctx.lineWidth=t===0?2:1;ctx.stroke();ctx.fillStyle='#222';ctx.textAlign='right';ctx.fillText(t,L-12,y+6)}
+ for(let p=0;p<=400;p+=50){let y=yr(p);ctx.fillStyle='#222';ctx.textAlign='left';ctx.fillText(p,R+12,y+6)}
+ ctx.strokeStyle='#222';ctx.lineWidth=2;ctx.strokeRect(L,T,pw,ph);
+ for(let i=0;i<12;i++){let x=L+step*(i+.5),y=yr(q.rain[i]),bw=step*.56;ctx.fillStyle='#d0d0d0';ctx.strokeStyle='#555';ctx.lineWidth=1.4;ctx.fillRect(x-bw/2,y,bw,B-y);ctx.strokeRect(x-bw/2,y,bw,B-y)}
+ ctx.beginPath();ctx.strokeStyle='#333';ctx.lineWidth=3;q.temps.forEach((v,i)=>{let x=L+step*(i+.5),y=yt(v);if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+ q.temps.forEach((v,i)=>{let x=L+step*(i+.5),y=yt(v);ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fillStyle='#888';ctx.fill();ctx.strokeStyle='#333';ctx.lineWidth=1.5;ctx.stroke()});
+ ctx.fillStyle='#222';ctx.font='18px sans-serif';ctx.textAlign='center';for(let i=0;i<12;i++)if([0,3,6,9,11].includes(i))ctx.fillText(i+1,L+step*(i+.5),B+28);
+ ctx.font='bold 19px sans-serif';ctx.fillText('℃',L-36,T-12);ctx.fillText('mm',R+44,T-12);
+}
+function update(){let total=deck.length;$('qnum').textContent=Math.min(idx+1,total)+' / '+total;$('correct').textContent=score;$('rate').textContent=answered?Math.round(score/answered*100)+'%':'--%';$('progress').style.width=(idx/total*100)+'%'}
+function render(){
+ locked=false;$('feedback').className='feedback';$('next').hidden=true;
+ if(idx>=deck.length){finish();return}
+ const q=deck[idx];draw(q);update();
+ document.querySelectorAll('#answers button').forEach(b=>{b.disabled=false;b.className=''});
+}
+function finish(){
+ $('qnum').textContent='完了';$('progress').style.width='100%';
+ $('feedback').className='feedback show';
+ $('feedback').innerHTML='<div class="result">全問終了！</div><div style="font-size:25px;font-weight:800;margin:8px 0">'+score+' / '+deck.length+'問正解</div><div>正解率 '+Math.round(score/deck.length*100)+'%｜間違えた問題 '+wrong.length+'問</div>';
+ $('next').hidden=true;
+}
+document.querySelectorAll('#answers button').forEach(b=>b.addEventListener('click',()=>{
+ if(locked||idx>=deck.length)return;locked=true;answered++;
+ const q=deck[idx],ok=b.dataset.v===q.type;if(ok)score++;else wrong.push(q);
+ document.querySelectorAll('#answers button').forEach(x=>{x.disabled=true;if(x.dataset.v===q.type)x.classList.add('correct')});
+ if(!ok)b.classList.add('wrong');
+ $('feedback').className='feedback show';
+ $('feedback').innerHTML='<div class="result" style="color:'+(ok?'var(--green)':'var(--red)')+'">'+(ok?'○ 正解！':'× 不正解')+'</div><div style="font-size:20px;font-weight:800;margin-top:5px">正解：'+q.type+'</div><div class="explain">参考都市：'+q.city+'<br>'+q.desc+'</div>';
+ $('next').textContent=idx===deck.length-1?'結果を見る':'次の問題へ →';$('next').hidden=false;update();
+}));
+$('next').addEventListener('click',()=>{idx++;render()});
+function start(){review=false;buildDeck();idx=score=answered=0;wrong=[];render()}
+$('restart').addEventListener('click',start);
+$('mode').addEventListener('change',start);
+$('wrongOnly').addEventListener('click',()=>{
+ if(!wrong.length){alert('まだ間違えた問題はないよ。');return}
+ deck=shuffle([...wrong]);wrong=[];idx=score=answered=0;review=true;render();
+});
+start();
+})();
+</script>
+</body>
+</html>
